@@ -1,53 +1,61 @@
 package main
 
 import (
-    "log"
-    "io/ioutil"
-    "fmt"
-    "net/http"
-    "strings"
-    "github.com/dyatlov/go-opengraph/opengraph"
+	"log"
+	"net/http"
+	"net/http/httputil"
+	"strconv"
+
+	"github.com/johnreutersward/opengraph"
 )
 
+// PriceData Scraped data from Gearbest or Banggood containing the price, image url, product name etc.
 type PriceData struct {
-    title string
-    url string
-    price int
-    imageUrl int
+	Site          string  `json:"site"`
+	Title         string  `json:"title"`
+	URL           string  `json:"url"`
+	PriceAmount   float64 `json:"price_amount"`
+	PriceCurrency string  `json:"price_currency"`
+	ImageURL      string  `json:"image_url"`
 }
 
 func scrapePage(url string) PriceData {
-    webSiteContents := getWebsiteContents(url)
-    return extractPriceData(webSiteContents)
-}
+	resp, err := http.Get(url)
+	if err != nil {
+		log.Println("Failed to scrape url: '" + url + "', because: '" + err.Error() + "'")
+		bytes, _ := httputil.DumpResponse(resp, true)
+		log.Println("Response: " + string(bytes))
+		return PriceData{}
+	}
+	defer resp.Body.Close()
 
-func getWebsiteContents(url string) string {
-    resp, err := http.Get(url)
-    if err != nil {
-        fmt.Println("Failed to scrape url: '" + url + "', because: '" + err.Error() + "'")
-        return ""
-    }
-    defer resp.Body.Close()
+	md, _ := opengraph.Extract(resp.Body)
+	if err != nil {
+		log.Println("Failed to extract OpenGraph data because: '" + err.Error() + "'")
+		bytes, _ := httputil.DumpResponse(resp, true)
+		log.Println("Response: " + string(bytes))
+		return PriceData{}
+	}
 
-    bodyBytes, err := ioutil.ReadAll(resp.Body)
-    if err != nil {
-        log.Fatal(err)
-    }
-    body := string(bodyBytes)
+	data := PriceData{}
+	for i := range md {
+		log.Printf("Found OpenGraph: %s = %s\n", md[i].Property, md[i].Content)
 
-    return body
-}
+		switch md[i].Property {
+		case "site_name":
+			data.Site = md[i].Content
+		case "title":
+			data.Title = md[i].Content
+		case "image":
+			data.ImageURL = md[i].Content
+		case "url":
+			data.URL = md[i].Content
+		case "price:amount":
+			data.PriceAmount, _ = strconv.ParseFloat(md[i].Content, 32)
+		case "price:currency":
+			data.PriceCurrency = md[i].Content
+		}
+	}
 
-func extractPriceData(webPageContents string) PriceData {
-    og := opengraph.NewOpenGraph()
-    err := og.ProcessHTML(strings.NewReader(webPageContents))
-
-    if err != nil {
-        fmt.Println("Failed to extract OpenGraph data from: '" + webPageContents + "', because: '" + err.Error() + "'")
-        return PriceData{}
-    }
-
-    priceData := PriceData{title: og.Title, url: og.URL}
-
-    return priceData
+	return data
 }
