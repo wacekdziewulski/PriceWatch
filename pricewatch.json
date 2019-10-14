@@ -1,0 +1,8 @@
+{
+    "ServerURL": "localhost:8333"
+    "Database":
+        {
+            "Host": "localhost"
+            "Port": "Port"
+        }
+}

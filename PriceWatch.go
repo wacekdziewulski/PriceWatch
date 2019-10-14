@@ -6,10 +6,25 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/tkanos/gonfig"
 )
 
-const listenURL = "localhost"
-const listenPort = "8333"
+const configurationFile = "./pricewatch.json"
+
+// Configuration contains the PriceWatch settings
+type Configuration struct {
+	ServerURL string `env:"PRICEWATCH_SERVER_URL"`
+}
+
+func initConfiguration() Configuration {
+	configuration := Configuration{}
+	err := gonfig.GetConf(configurationFile, &configuration)
+	if err != nil {
+		panic(err)
+	}
+	log.Println(configuration.ServerURL)
+	return configuration
+}
 
 func checkPrice(w http.ResponseWriter, r *http.Request) {
 	requestedPage := string(r.URL.Query()["url"][0])
@@ -22,8 +37,10 @@ func checkPrice(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	serverURL := listenURL + ":" + listenPort
-	log.Println("Starting PriceWatch on: " + serverURL)
+	log.Println("Reading configuration from: " + configurationFile)
+	configuration := initConfiguration()
+
+	log.Println("Starting PriceWatch on: " + configuration.ServerURL)
 
 	router := mux.NewRouter().StrictSlash(true)
 
@@ -33,5 +50,5 @@ func main() {
 		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
 	})
 
-	log.Println(http.ListenAndServe(serverURL, router))
+	log.Println(http.ListenAndServe(configuration.ServerURL, router))
 }
