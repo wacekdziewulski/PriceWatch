@@ -60,6 +60,7 @@ CREATE TABLE `prices` (
   `price` decimal(6,2) NOT NULL,
   `currency` varchar(4) COLLATE utf8mb4_bin NOT NULL,
   `coupon_id` int(11) DEFAULT NULL,
+  `date_added` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `fk_product_id_idx` (`product_id`),
   CONSTRAINT `fk_product_id` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
@@ -90,6 +91,7 @@ CREATE TABLE `products` (
   `title` varchar(1024) CHARACTER SET utf8mb4 NOT NULL,
   `id` int(11) NOT NULL,
   `image` longblob,
+  `date_added` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `url_UNIQUE` (`url`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -142,4 +144,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-10-14  9:54:01
+-- Dump completed on 2019-10-14 11:32:05

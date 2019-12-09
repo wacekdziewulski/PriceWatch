@@ -6,49 +6,30 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/tkanos/gonfig"
 )
-
-const configurationFile = "./pricewatch.json"
-
-// Configuration contains the PriceWatch settings
-type Configuration struct {
-	ServerURL string `env:"PRICEWATCH_SERVER_URL"`
-}
-
-func initConfiguration() Configuration {
-	configuration := Configuration{}
-	err := gonfig.GetConf(configurationFile, &configuration)
-	if err != nil {
-		panic(err)
-	}
-	log.Println(configuration.ServerURL)
-	return configuration
-}
-
-func checkPrice(w http.ResponseWriter, r *http.Request) {
-	requestedPage := string(r.URL.Query()["url"][0])
-	log.Println("Price check for url: " + requestedPage)
-
-	var output = scrapePage(requestedPage)
-	log.Println(output)
-
-	json.NewEncoder(w).Encode(output)
-}
 
 func main() {
 	log.Println("Reading configuration from: " + configurationFile)
-	configuration := initConfiguration()
+	configuration := NewConfiguration()
+	log.Println(configuration)
+	dbConnector := NewDbConnector(configuration)
+	if dbConnector != nil {
+		defer dbConnector.CloseConnection()
+	}
+	serverURL := configuration.GetServerURL()
+	productDao := NewProductDao(dbConnector)
+	priceResource := NewPriceResource(productDao)
 
-	log.Println("Starting PriceWatch on: " + configuration.ServerURL)
+	log.Println("Starting PriceWatch on: " + serverURL)
 
 	router := mux.NewRouter().StrictSlash(true)
 
-	router.HandleFunc("/price", checkPrice)
+	router.HandleFunc("/price", priceResource.checkPrice)
 
 	router.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
 	})
 
-	log.Println(http.ListenAndServe(configuration.ServerURL, router))
+	log.Println(http.ListenAndServe(serverURL, router))
+
 }

@@ -1,8 +1,16 @@
 {
-    "ServerURL": "localhost:8333"
-    "Database":
-        {
-            "Host": "localhost"
-            "Port": "Port"
-        }
+    "Server": {
+        "Scheme": "http",
+        "Host": "localhost",
+        "Port": 8333
+    },
+    "Database": {
+        "Type": "mysql",
+        "Host": "localhost",
+        "Port": 3306,
+        "Protocol": "tcp",
+        "User": "pricewatch",
+        "Password": "pricewatch",
+        "Schema": "pricewatch"
+    }
 }
