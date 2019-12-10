@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 
 	"github.com/tkanos/gonfig"
@@ -35,11 +36,16 @@ type Configuration struct {
 
 // NewConfiguration creates the configuration object
 func NewConfiguration() *Configuration {
+	log.Println("Reading configuration from: " + configurationFile)
+
 	configuration := &Configuration{}
 	err := gonfig.GetConf(configurationFile, configuration)
 	if err != nil {
 		panic(err)
 	}
+
+	log.Println(configuration.String())
+
 	return configuration
 }
 
