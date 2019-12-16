@@ -1,6 +1,10 @@
 package main
 
 import (
+	"PriceWatch/configuration"
+	"PriceWatch/db"
+	"PriceWatch/resource"
+	"PriceWatch/service"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -8,20 +12,23 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// Application describes the whole PriceWatch application with endpoints, dao etc.
 type Application struct {
-	configuration *Configuration
-	dbConnector   *DBConnector
-	productDao    *ProductDao
-	priceResource *PriceResource
+	configuration *configuration.Configuration
+	connector     *db.Connector
+	productDao    *db.ProductDao
+	priceService  *service.PriceService
+	priceResource *resource.PriceResource
 }
 
-func NewApplication(c *Configuration, dbc *DBConnector, pd *ProductDao, pr *PriceResource) *Application {
-	return &Application{configuration: c, dbConnector: dbc, productDao: pd, priceResource: pr}
+// NewApplication creates a new application, which spans the PriceWatch functionality together
+func NewApplication(c *configuration.Configuration, dbc *db.Connector, pd *db.ProductDao, ps *service.PriceService, pr *resource.PriceResource) *Application {
+	return &Application{configuration: c, connector: dbc, productDao: pd, priceService: ps, priceResource: pr}
 }
 
 func (app *Application) start() {
-	if app.dbConnector != nil {
-		defer app.dbConnector.CloseConnection()
+	if app.connector != nil {
+		defer app.connector.CloseConnection()
 	}
 
 	serverURL := app.configuration.GetServerURL()
@@ -30,7 +37,7 @@ func (app *Application) start() {
 
 	router := mux.NewRouter().StrictSlash(true)
 
-	router.HandleFunc("/price", app.priceResource.checkPrice)
+	router.HandleFunc("/price", app.priceResource.CheckPrice)
 	router.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
 	})

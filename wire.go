@@ -3,10 +3,15 @@
 package main
 
 import (
+	"PriceWatch/configuration"
+	"PriceWatch/db"
+	"PriceWatch/resource"
+	"PriceWatch/service"
+
 	"github.com/google/wire"
 )
 
 func Initialize() *Application {
-	wire.Build(NewApplication, NewConfiguration, NewDbConnector, NewProductDao, NewPriceResource)
+	wire.Build(NewApplication, configuration.NewConfiguration, db.NewConnector, db.NewProductDao, service.NewPriceService, resource.NewPriceResource)
 	return &Application{}
 }

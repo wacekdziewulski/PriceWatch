@@ -1,6 +1,8 @@
-package main
+package web
 
 import (
+	"PriceWatch/model"
+	"bytes"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -9,23 +11,14 @@ import (
 	"github.com/johnreutersward/opengraph"
 )
 
-// PriceData Scraped data from Gearbest or Banggood containing the price, image url, product name etc.
-type PriceData struct {
-	Site          string  `json:"site"`
-	Title         string  `json:"title"`
-	URL           string  `json:"url"`
-	PriceAmount   float64 `json:"price_amount"`
-	PriceCurrency string  `json:"price_currency"`
-	ImageURL      string  `json:"image_url"`
-}
-
-func scrapePage(url string) PriceData {
+// ScrapePage extracts the price data from OpenGraph data of a chinese store under a certain product url
+func ScrapePage(url string) model.PriceData {
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Println("Failed to scrape url: '" + url + "', because: '" + err.Error() + "'")
 		bytes, _ := httputil.DumpResponse(resp, true)
 		log.Println("Response: " + string(bytes))
-		return PriceData{}
+		return model.PriceData{}
 	}
 	defer resp.Body.Close()
 
@@ -34,10 +27,10 @@ func scrapePage(url string) PriceData {
 		log.Println("Failed to extract OpenGraph data because: '" + err.Error() + "'")
 		bytes, _ := httputil.DumpResponse(resp, true)
 		log.Println("Response: " + string(bytes))
-		return PriceData{}
+		return model.PriceData{}
 	}
 
-	data := PriceData{}
+	data := model.PriceData{}
 	for i := range md {
 		log.Printf("Found OpenGraph: %s = %s\n", md[i].Property, md[i].Content)
 
@@ -58,4 +51,19 @@ func scrapePage(url string) PriceData {
 	}
 
 	return data
+}
+
+// DownloadImage downloads an image from a certain url
+func DownloadImage(imageURL string) string {
+	resp, err := http.Get(imageURL)
+	if err != nil {
+		log.Println("Failed to download image from: '" + imageURL + "', because: '" + err.Error() + "'")
+		bytes, _ := httputil.DumpResponse(resp, true)
+		log.Println("Response: " + string(bytes))
+	}
+
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(resp.Body)
+
+	return buf.String()
 }

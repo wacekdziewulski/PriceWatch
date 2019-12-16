@@ -5,6 +5,7 @@
 *.so
 *.dylib
 PriceWatch
+wire_gen.go
 
 # Test binary, build with `go test -c`
 *.test

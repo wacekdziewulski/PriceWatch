@@ -1,6 +1,7 @@
-package main
+package db
 
 import (
+	"PriceWatch/configuration"
 	"database/sql"
 	"log"
 	"strconv"
@@ -8,14 +9,14 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-// DBConnector manages database connectivity
-type DBConnector struct {
-	db *sql.DB
+// Connector manages database connectivity
+type Connector struct {
+	database *sql.DB
 }
 
-// NewDbConnector creates and initializes a new database connection
-func NewDbConnector(configuration *Configuration) *DBConnector {
-	dbConnector := &DBConnector{}
+// NewConnector creates and initializes a new database connection
+func NewConnector(configuration *configuration.Configuration) *Connector {
+	connector := &Connector{}
 
 	dbType := configuration.Database.Type
 	dbConnectionString := configuration.GetDatabaseConnectionString()
@@ -26,16 +27,16 @@ func NewDbConnector(configuration *Configuration) *DBConnector {
 		return nil
 	}
 
-	dbConnector.db = db
+	connector.database = db
 
 	log.Println("Connected to database on: " + configuration.Database.Host + ", port: " + strconv.Itoa(configuration.Database.Port))
 
-	return dbConnector
+	return connector
 }
 
 // CloseConnection closes the Database Connection
-func (connector *DBConnector) CloseConnection() {
-	if connector.db != nil {
-		connector.db.Close()
+func (connector *Connector) CloseConnection() {
+	if connector.database != nil {
+		connector.database.Close()
 	}
 }
