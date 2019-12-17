@@ -1,0 +1,15 @@
+language: go
+
+go:
+- 1.13.x
+
+script: 
+- go get github.com/google/wire/cmd/wire
+- go get github.com/gorilla/mux
+- go get github.com/tkanos/gonfig
+- go get github.com/johnreutersward/opengraph
+- go get github.com/go-sql-driver/mysql
+- wire
+
+notifications:
+  email: false
