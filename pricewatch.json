@@ -12,5 +12,12 @@
         "User": "pricewatch",
         "Password": "pricewatch",
         "Schema": "pricewatch"
+    },
+    "URLShortening": {
+        "AccessToken": "",
+        "GroupGUID": "",
+        "Scheme": "https",
+        "APIHost": "api-ssl.bitly.com",
+        "APIPath": "/v4/shorten"
     }
 }

@@ -14,16 +14,17 @@ import (
 
 // Application describes the whole PriceWatch application with endpoints, dao etc.
 type Application struct {
-	configuration *configuration.Configuration
-	connector     *db.Connector
-	productDao    *db.ProductDao
-	priceService  *service.PriceService
-	priceResource *resource.PriceResource
+	configuration        *configuration.Configuration
+	connector            *db.Connector
+	productDao           *db.ProductDao
+	priceService         *service.PriceService
+	urlShorteningService *service.URLShorteningService
+	priceResource        *resource.PriceResource
 }
 
 // NewApplication creates a new application, which spans the PriceWatch functionality together
-func NewApplication(c *configuration.Configuration, dbc *db.Connector, pd *db.ProductDao, ps *service.PriceService, pr *resource.PriceResource) *Application {
-	return &Application{configuration: c, connector: dbc, productDao: pd, priceService: ps, priceResource: pr}
+func NewApplication(c *configuration.Configuration, dbc *db.Connector, pd *db.ProductDao, ps *service.PriceService, uss *service.URLShorteningService, pr *resource.PriceResource) *Application {
+	return &Application{configuration: c, connector: dbc, productDao: pd, priceService: ps, urlShorteningService: uss, priceResource: pr}
 }
 
 func (app *Application) start() {

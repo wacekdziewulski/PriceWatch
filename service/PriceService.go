@@ -5,22 +5,30 @@ import (
 	"PriceWatch/model"
 	"PriceWatch/web"
 	"log"
-	"os"
 )
 
 // PriceService - handles adding new product, or just updating the price of an existing one
 type PriceService struct {
-	productDao *db.ProductDao
+	productDao           *db.ProductDao
+	urlShorteningService *URLShorteningService
 }
 
 // NewPriceService creates a new PriceService structure
-func NewPriceService(productDao *db.ProductDao) *PriceService {
-	return &PriceService{productDao}
+func NewPriceService(productDao *db.ProductDao, urlShorteningService *URLShorteningService) *PriceService {
+	return &PriceService{productDao, urlShorteningService}
 }
 
 // AddPrice adds a new web scraped PriceData into the Database
-func (service *PriceService) AddPrice(priceData model.PriceData) {
-	service.productDao.AddProduct(priceData)
+func (service *PriceService) AddPrice(priceData *model.PriceData) {
+	addedSuccessfully := service.productDao.AddProduct(priceData)
+
+	if addedSuccessfully {
+		log.Print("Added DB entry: ")
+		log.Println(priceData)
+	} else {
+		log.Print("Failed to add entry to the database: ")
+		log.Println(priceData)
+	}
 }
 
 // AddProductPriceByURL adds product to Database and returns the priceData result
@@ -33,20 +41,11 @@ func (service *PriceService) AddProductPriceByURL(url string) *model.PriceData {
 	// 4b. If we don't have an image yet, use the ImageURL to download the image
 	// 5. Attach the image data upon adding the entry to the database
 	// 6. Update the price of the product if we already have a product entry
-	var priceData = web.ScrapePage(url)
-	log.Println(priceData)
+	priceData := <-web.ScrapePage(url)
+	priceData.ImageData = <-web.DownloadImage(priceData.ImageURL)
+	priceData.AffiliateLink = <-service.urlShorteningService.ShortenURL(priceData.URL)
 
-	outputFileName := "/tmp/PriceWatch.jpg"
-
-	f, err := os.Create(outputFileName)
-	if err == nil {
-		defer f.Close()
-		log.Println("Downloaded image from: " + priceData.ImageURL + " into " + outputFileName)
-		f.WriteString(web.DownloadImage(priceData.ImageURL))
-		f.Sync()
-	}
-
-	service.AddPrice(priceData)
+	service.AddPrice(&priceData)
 
 	return &priceData
 }

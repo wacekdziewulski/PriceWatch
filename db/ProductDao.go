@@ -1,6 +1,9 @@
 package db
 
-import "PriceWatch/model"
+import (
+	"PriceWatch/model"
+	"log"
+)
 
 // ProductDao handles the database operations regarding adding Product data
 type ProductDao struct {
@@ -13,13 +16,39 @@ func NewProductDao(connector *Connector) *ProductDao {
 }
 
 // AddProduct adds a PriceData object to the Product table in the database
-func (dao *ProductDao) AddProduct(priceData model.PriceData) {
-	//	err := dao.connector.db.QueryRow("INSERT INTO `products` (`url`, `affiliate_link`, `image_url`, `site_id`, `title`, `id`, `image`, `date_added`) VALUES
-	//	if err != nil {
-	//		log.Printf("Couldn't insert priceData entry into DB for: %s under %s", priceData.Title, priceData.URL)
-	//	}
-	//  return &s
-	return
+func (dao *ProductDao) AddProduct(priceData *model.PriceData) bool {
+	query := "INSERT INTO `products` (`url`, `affiliate_link`, `image_url`, `site_id`, `title`, `image`) VALUES (?,?,?,?,?,?)"
+	log.Println("Running SQL query: " + query)
+	log.Println(priceData)
+	statement, err := dao.connector.getDb().Prepare(query)
+
+	if err != nil {
+		log.Print("Failed to prepare DB Statement:" + query)
+		log.Println(err)
+		return false
+	}
+
+	result, err := statement.Exec(priceData.URL, priceData.AffiliateLink, priceData.ImageURL, 1, priceData.Title, priceData.ImageData)
+
+	if err != nil {
+		log.Print("Failed to execute DB Statement:" + query)
+		log.Println(err)
+		return false
+	}
+	defer statement.Close()
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		log.Print("Failed to insert DB data")
+		log.Println(err)
+		return false
+	}
+
+	if rows > 0 {
+		return true
+	}
+
+	return false
 }
 
 //func (dao *ProductDao) findProduct(URL string) sql.NullString {

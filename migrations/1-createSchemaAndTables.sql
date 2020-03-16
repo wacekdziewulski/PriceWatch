@@ -85,11 +85,11 @@ DROP TABLE IF EXISTS `products`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `products` (
   `url` varchar(1024) CHARACTER SET ascii NOT NULL,
-  `affiliate_link` varchar(128) CHARACTER SET ascii DEFAULT NULL,
+  `affiliate_link` varchar(1024) CHARACTER SET ascii DEFAULT NULL,
   `image_url` varchar(512) CHARACTER SET ascii DEFAULT NULL,
   `site_id` int(11) NOT NULL,
   `title` varchar(1024) CHARACTER SET utf8mb4 NOT NULL,
-  `id` int(11) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `image` longblob,
   `date_added` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -131,7 +131,7 @@ CREATE TABLE `stores` (
 
 LOCK TABLES `stores` WRITE;
 /*!40000 ALTER TABLE `stores` DISABLE KEYS */;
-INSERT INTO `stores` VALUES (1,'Gearbest','https://gearbest.com','lkid','11805939'),(2,'Banggood','https://banggood.com','p','NM16185262492015094D'),(3,'Tomtop','https://tomtop.com','aid','4smiglapl'),(4,'HobbyKing','https://hobbyking.com','affiliate_code','OKGPJSDQIOVQUSK'),(5,'HorusRC','https://horusrc.com','acc','5206');
+INSERT INTO `stores` VALUES (1,'Gearbest','https://gearbest.com','lkid','11805939'),(2,'Banggood','https://banggood.com','p','NM16185262492015094D'),(3,'Tomtop','https://tomtop.com','aid','4smiglapl'),(4,'HobbyKing','https://hobbyking.com','affiliate_code','OKGPJSDQIOVQUSK'),(5,'HorusRC','https://horusrc.com','acc','5206'),(6,'BetaFPV','https://betafpv.com','sca_ref','61382.1iPDBtK4Mq');
 /*!40000 ALTER TABLE `stores` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

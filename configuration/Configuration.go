@@ -3,6 +3,7 @@ package configuration
 import (
 	"fmt"
 	"log"
+	"regexp"
 	"strconv"
 
 	"github.com/tkanos/gonfig"
@@ -28,10 +29,20 @@ type DatabaseConfiguration struct {
 	Schema   string `env:"PRICEWATCH_DB_SCHEMA"`
 }
 
+// URLShorteningConfiguration contains settings for bit.ly to shorten the affiliate links
+type URLShorteningConfiguration struct {
+	AccessToken string `env:"PRICEWATCH_URL_SHORTENER_ACCESS_TOKEN"`
+	APIPath     string `env:"PRICEWATCH_URL_SHORTENER_API_PATH"`
+	APIHost     string `env:"PRICEWATCH_URL_SHORTENER_API_HOST"`
+	Scheme      string `env:"PRICEWATCH_URL_SHORTENER_API_SCHEME"`
+	GroupGUID   string `env:"PRICEWATCH_URL_SHORTENER_GROUP_GUID"`
+}
+
 // Configuration contains the PriceWatch settings
 type Configuration struct {
-	Server   ServerConfiguration
-	Database DatabaseConfiguration
+	Server        ServerConfiguration
+	Database      DatabaseConfiguration
+	URLShortening URLShorteningConfiguration
 }
 
 // NewConfiguration creates the configuration object
@@ -57,9 +68,13 @@ func (dc *DatabaseConfiguration) String() string {
 	return fmt.Sprintf("DatabaseConfiguration: %v, %v, %d, %v, %v, %v", dc.Type, dc.Host, dc.Port, dc.User, dc.Password, dc.Schema)
 }
 
+func (usc *URLShorteningConfiguration) String() string {
+	return fmt.Sprintf("URL Shortening Configuration: %v, %v, %v, %v, %v", maskSensitiveInformation(usc.AccessToken), usc.Scheme, usc.APIHost, usc.APIPath, maskSensitiveInformation(usc.GroupGUID))
+}
+
 // String implements the Stringer interface for a string representation
 func (c *Configuration) String() string {
-	return fmt.Sprintf("Read Configuration: %v, %v", c.Server, c.Database)
+	return fmt.Sprintf("Read Configuration: %v, %v, %v", c.Server, c.Database, c.URLShortening)
 }
 
 // GetServerURL returns the server full URL with scheme, hostname and port
@@ -70,4 +85,9 @@ func (c *Configuration) GetServerURL() string {
 // GetDatabaseConnectionString returns a connection string in a format accepted by database engines
 func (c *Configuration) GetDatabaseConnectionString() string {
 	return c.Database.User + ":" + c.Database.Password + "@" + c.Database.Protocol + "(" + c.Database.Host + ":" + strconv.Itoa(c.Database.Port) + ")/" + c.Database.Schema
+}
+
+func maskSensitiveInformation(input string) string {
+	re := regexp.MustCompile(`(.{2}).*`)
+	return re.ReplaceAllString(input, `$1\*\*\*\*\*`)
 }

@@ -2,7 +2,6 @@ package web
 
 import (
 	"PriceWatch/model"
-	"bytes"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -12,13 +11,17 @@ import (
 )
 
 // ScrapePage extracts the price data from OpenGraph data of a chinese store under a certain product url
-func ScrapePage(url string) model.PriceData {
+func ScrapePage(url string) <-chan model.PriceData {
+	priceData := make(chan model.PriceData, 1)
+
 	resp, err := http.Get(url)
+
 	if err != nil {
 		log.Println("Failed to scrape url: '" + url + "', because: '" + err.Error() + "'")
 		bytes, _ := httputil.DumpResponse(resp, true)
 		log.Println("Response: " + string(bytes))
-		return model.PriceData{}
+		priceData <- model.PriceData{}
+		return priceData
 	}
 	defer resp.Body.Close()
 
@@ -27,7 +30,8 @@ func ScrapePage(url string) model.PriceData {
 		log.Println("Failed to extract OpenGraph data because: '" + err.Error() + "'")
 		bytes, _ := httputil.DumpResponse(resp, true)
 		log.Println("Response: " + string(bytes))
-		return model.PriceData{}
+		priceData <- model.PriceData{}
+		return priceData
 	}
 
 	data := model.PriceData{}
@@ -50,20 +54,9 @@ func ScrapePage(url string) model.PriceData {
 		}
 	}
 
-	return data
-}
+	log.Println(data)
 
-// DownloadImage downloads an image from a certain url
-func DownloadImage(imageURL string) string {
-	resp, err := http.Get(imageURL)
-	if err != nil {
-		log.Println("Failed to download image from: '" + imageURL + "', because: '" + err.Error() + "'")
-		bytes, _ := httputil.DumpResponse(resp, true)
-		log.Println("Response: " + string(bytes))
-	}
+	priceData <- data
 
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(resp.Body)
-
-	return buf.String()
+	return priceData
 }
