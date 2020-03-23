@@ -3,8 +3,9 @@ package resource
 import (
 	"PriceWatch/service"
 	"encoding/json"
-	"log"
 	"net/http"
+
+	"github.com/sirupsen/logrus"
 )
 
 // PriceResource manages endpoints and database operations regarding pricing
@@ -20,7 +21,7 @@ func NewPriceResource(priceService *service.PriceService) *PriceResource {
 // CheckPrice checks the product price for the chinese store url given
 func (resource *PriceResource) CheckPrice(w http.ResponseWriter, r *http.Request) {
 	requestedPage := string(r.URL.Query()["url"][0])
-	log.Println("Price check for url: " + requestedPage)
+	logrus.Info("Price check for url: ", requestedPage)
 
 	priceData := resource.priceService.AddProductPriceByURL(requestedPage)
 

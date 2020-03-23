@@ -2,12 +2,12 @@ package web
 
 import (
 	"PriceWatch/model"
-	"log"
 	"net/http"
 	"net/http/httputil"
 	"strconv"
 
 	"github.com/johnreutersward/opengraph"
+	"github.com/sirupsen/logrus"
 )
 
 // ScrapePage extracts the price data from OpenGraph data of a chinese store under a certain product url
@@ -17,9 +17,8 @@ func ScrapePage(url string) <-chan model.PriceData {
 	resp, err := http.Get(url)
 
 	if err != nil {
-		log.Println("Failed to scrape url: '" + url + "', because: '" + err.Error() + "'")
 		bytes, _ := httputil.DumpResponse(resp, true)
-		log.Println("Response: " + string(bytes))
+		logrus.Warnf("Failed to scrape url: %s, because of: %+v. HttpResponse: %s", url, err, bytes)
 		priceData <- model.PriceData{}
 		return priceData
 	}
@@ -27,16 +26,14 @@ func ScrapePage(url string) <-chan model.PriceData {
 
 	md, _ := opengraph.Extract(resp.Body)
 	if err != nil {
-		log.Println("Failed to extract OpenGraph data because: '" + err.Error() + "'")
-		bytes, _ := httputil.DumpResponse(resp, true)
-		log.Println("Response: " + string(bytes))
+		logrus.Warnf("Failed to extract OpenGraph data because of: %+v", err)
 		priceData <- model.PriceData{}
 		return priceData
 	}
 
 	data := model.PriceData{}
 	for i := range md {
-		log.Printf("Found OpenGraph: %s = %s\n", md[i].Property, md[i].Content)
+		logrus.Debugf("Found OpenGraph: %s = %s", md[i].Property, md[i].Content)
 
 		switch md[i].Property {
 		case "site_name":
@@ -53,8 +50,6 @@ func ScrapePage(url string) <-chan model.PriceData {
 			data.PriceCurrency = md[i].Content
 		}
 	}
-
-	log.Println(data)
 
 	priceData <- data
 

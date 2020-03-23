@@ -2,29 +2,29 @@ package web
 
 import (
 	"bytes"
-	"log"
 	"net/http"
 	"net/http/httputil"
+
+	"github.com/sirupsen/logrus"
 )
 
 // DownloadImage downloads an image from a certain url
 func DownloadImage(imageURL string) <-chan string {
 	image := make(chan string, 1)
 
-	log.Println("Downloading image from: " + imageURL)
+	logrus.Debug("Downloading image from: ", imageURL)
 
 	resp, err := http.Get(imageURL)
 	if err != nil {
-		log.Println("Failed to download image from: '" + imageURL + "', because: '" + err.Error() + "'")
 		bytes, _ := httputil.DumpResponse(resp, true)
-		log.Println("Response: " + string(bytes))
+		logrus.Warnf("Failed to download image from: %s, because of: %+v. HttpResponse: %s", imageURL, err, bytes)
 	}
 
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(resp.Body)
 
 	if buf.Len() > 0 {
-		log.Println("Downloaded image from: " + imageURL + " of size: " + string(buf.Len()))
+		logrus.Infof("Downloaded image from: %s of size: %d", imageURL, buf.Len())
 	}
 
 	image <- buf.String()

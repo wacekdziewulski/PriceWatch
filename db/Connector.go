@@ -3,10 +3,9 @@ package db
 import (
 	"PriceWatch/configuration"
 	"database/sql"
-	"log"
-	"strconv"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/sirupsen/logrus"
 )
 
 // Connector manages database connectivity
@@ -23,13 +22,13 @@ func NewConnector(configuration *configuration.Configuration) *Connector {
 	db, err := sql.Open(dbType, dbConnectionString)
 
 	if err != nil {
-		log.Println("Failed to open database connection: " + err.Error())
+		logrus.Errorf("Failed to open database connection because: %+v", err)
 		return nil
 	}
 
 	connector.database = db
 
-	log.Println("Connected to database on: " + configuration.Database.Host + ", port: " + strconv.Itoa(configuration.Database.Port))
+	logrus.Infof("Connected to database on: %s, port: %d", configuration.Database.Host, configuration.Database.Port)
 
 	return connector
 }
@@ -40,28 +39,25 @@ func (connector *Connector) getDb() *sql.DB {
 
 // InsertData puts data into the database using an "insert into" statement
 func (connector *Connector) InsertData(query string, args ...interface{}) bool {
-	log.Println("Running SQL query: " + query)
+	logrus.Debug("Running SQL query: ", query)
 	statement, err := connector.getDb().Prepare(query)
 
 	if err != nil {
-		log.Print("Failed to prepare DB Statement:" + query)
-		log.Println(err)
+		logrus.Warnf("Failed to prepare DB Statement for query: %s, because: %+v", query, err)
 		return false
 	}
 
 	result, err := statement.Exec(args...)
 
 	if err != nil {
-		log.Print("Failed to execute DB Statement:" + query)
-		log.Println(err)
+		logrus.Warnf("Failed to execute DB Statement for query: %s, because: %+v", query, err)
 		return false
 	}
 	defer statement.Close()
 
 	rows, err := result.RowsAffected()
 	if err != nil {
-		log.Print("Failed to insert DB data")
-		log.Println(err)
+		logrus.Warnf("Failed to insert DB data for query: %s, because: %+v", query, err)
 		return false
 	}
 

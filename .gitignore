@@ -7,6 +7,7 @@
 PriceWatch
 wire_gen.go
 pricewatch_deploy.json
+pricewatch.json
 
 # Test binary, build with `go test -c`
 *.test

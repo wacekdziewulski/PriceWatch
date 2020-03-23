@@ -2,10 +2,10 @@ package configuration
 
 import (
 	"fmt"
-	"log"
 	"regexp"
 	"strconv"
 
+	"github.com/sirupsen/logrus"
 	"github.com/tkanos/gonfig"
 )
 
@@ -47,7 +47,7 @@ type Configuration struct {
 
 // NewConfiguration creates the configuration object
 func NewConfiguration() *Configuration {
-	log.Println("Reading configuration from: " + configurationFile)
+	logrus.Info("Reading configuration from: ", configurationFile)
 
 	configuration := &Configuration{}
 	err := gonfig.GetConf(configurationFile, configuration)
@@ -55,7 +55,7 @@ func NewConfiguration() *Configuration {
 		panic(err)
 	}
 
-	log.Println(configuration.String())
+	logrus.Debug(configuration.String())
 
 	return configuration
 }

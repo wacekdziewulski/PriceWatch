@@ -5,9 +5,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httputil"
+
+	"github.com/sirupsen/logrus"
 )
 
 // URLShorteningService proxies calls to bit.ly to shorten affiliate URLs
@@ -28,7 +29,7 @@ type bitlyResponse struct {
 func (service *URLShorteningService) ShortenURL(URL string) <-chan string {
 	shortURL := make(chan string, 1)
 
-	log.Println("Shortening URL for: " + URL)
+	logrus.Info("Shortening URL for: ", URL)
 
 	requestBody, err := json.Marshal(map[string]string{
 		"long_url":   URL,
@@ -41,15 +42,16 @@ func (service *URLShorteningService) ShortenURL(URL string) <-chan string {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+service.configuration.URLShortening.AccessToken)
 
-	dumpedReq, _ := httputil.DumpRequest(req, true)
-	log.Println(string(dumpedReq))
+	if logrus.IsLevelEnabled(logrus.DebugLevel) {
+		dumpedReq, _ := httputil.DumpRequest(req, true)
+		logrus.Debug(dumpedReq)
+	}
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
 
 	if err != nil {
-		log.Print("Failed to shorten URL: " + URL)
-		log.Println(err)
+		logrus.Warnf("Failed to shorten URL: %s, because: %+v", URL, err)
 		shortURL <- ""
 		return shortURL
 	}

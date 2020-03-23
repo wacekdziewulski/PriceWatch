@@ -6,10 +6,10 @@ import (
 	"PriceWatch/resource"
 	"PriceWatch/service"
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
 )
 
 // Application describes the whole PriceWatch application with endpoints, dao etc.
@@ -34,7 +34,7 @@ func (app *Application) start() {
 
 	serverURL := app.configuration.GetServerURL()
 
-	log.Println("Starting PriceWatch on: " + serverURL)
+	logrus.Infof("Starting PriceWatch on: %s", serverURL)
 
 	router := mux.NewRouter().StrictSlash(true)
 
@@ -43,5 +43,5 @@ func (app *Application) start() {
 		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
 	})
 
-	log.Println(http.ListenAndServe(serverURL, router))
+	logrus.Info(http.ListenAndServe(serverURL, router))
 }

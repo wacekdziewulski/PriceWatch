@@ -4,8 +4,8 @@ import (
 	"PriceWatch/db"
 	"PriceWatch/model"
 	"PriceWatch/web"
-	"fmt"
-	"log"
+
+	"github.com/sirupsen/logrus"
 )
 
 // PriceService - handles adding new product, or just updating the price of an existing one
@@ -24,10 +24,9 @@ func (service *PriceService) addProduct(priceData *model.PriceData) bool {
 	addedSuccessfully := service.productDao.AddProduct(priceData)
 
 	if addedSuccessfully {
-		log.Print("Added Product to DB: " + priceData.Title)
+		logrus.Infof("Added product: %s with price: %.2f %s", priceData.Title, priceData.PriceAmount, priceData.PriceCurrency)
 	} else {
-		log.Print("Failed to add entry to the database: ")
-		log.Println(priceData)
+		logrus.Warn("Failed to add entry to the database: ", priceData)
 	}
 
 	return addedSuccessfully
@@ -38,10 +37,9 @@ func (service *PriceService) addPrice(priceData *model.PriceData) bool {
 	addedSuccessfully := service.productDao.AddPrice(priceData)
 
 	if addedSuccessfully {
-		log.Print("Added product: " + priceData.Title + " with price: " + fmt.Sprintf("%.2f", priceData.PriceAmount) + " " + priceData.PriceCurrency)
+		logrus.Infof("Added price: %.2f %s for product: %s", priceData.PriceAmount, priceData.PriceCurrency, priceData.Title)
 	} else {
-		log.Print("Failed to add entry to the database: ")
-		log.Println(priceData)
+		logrus.Warn("Failed to add entry to the database: ", priceData)
 	}
 
 	return addedSuccessfully
