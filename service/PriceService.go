@@ -4,6 +4,7 @@ import (
 	"PriceWatch/db"
 	"PriceWatch/model"
 	"PriceWatch/web"
+	"fmt"
 	"log"
 )
 
@@ -18,17 +19,32 @@ func NewPriceService(productDao *db.ProductDao, urlShorteningService *URLShorten
 	return &PriceService{productDao, urlShorteningService}
 }
 
-// AddPrice adds a new web scraped PriceData into the Database
-func (service *PriceService) AddPrice(priceData *model.PriceData) {
+// addPrice adds a new web scraped PriceData into the Database
+func (service *PriceService) addProduct(priceData *model.PriceData) bool {
 	addedSuccessfully := service.productDao.AddProduct(priceData)
 
 	if addedSuccessfully {
-		log.Print("Added DB entry: ")
-		log.Println(priceData)
+		log.Print("Added Product to DB: " + priceData.Title)
 	} else {
 		log.Print("Failed to add entry to the database: ")
 		log.Println(priceData)
 	}
+
+	return addedSuccessfully
+}
+
+// addPrice adds a new web scraped PriceData into the Database
+func (service *PriceService) addPrice(priceData *model.PriceData) bool {
+	addedSuccessfully := service.productDao.AddPrice(priceData)
+
+	if addedSuccessfully {
+		log.Print("Added product: " + priceData.Title + " with price: " + fmt.Sprintf("%.2f", priceData.PriceAmount) + " " + priceData.PriceCurrency)
+	} else {
+		log.Print("Failed to add entry to the database: ")
+		log.Println(priceData)
+	}
+
+	return addedSuccessfully
 }
 
 // AddProductPriceByURL adds product to Database and returns the priceData result
@@ -45,7 +61,8 @@ func (service *PriceService) AddProductPriceByURL(url string) *model.PriceData {
 	priceData.ImageData = <-web.DownloadImage(priceData.ImageURL)
 	priceData.AffiliateLink = <-service.urlShorteningService.ShortenURL(priceData.URL)
 
-	service.AddPrice(&priceData)
+	service.addProduct(&priceData)
+	service.addPrice(&priceData)
 
 	return &priceData
 }

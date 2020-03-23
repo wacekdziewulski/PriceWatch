@@ -39,42 +39,37 @@ func (connector *Connector) getDb() *sql.DB {
 }
 
 // InsertData puts data into the database using an "insert into" statement
-func (connector *Connector) InsertData(statement string, args ...interface{}) int64 {
-	result, err := connector.database.Exec(statement, args)
+func (connector *Connector) InsertData(query string, args ...interface{}) bool {
+	log.Println("Running SQL query: " + query)
+	statement, err := connector.getDb().Prepare(query)
+
 	if err != nil {
-		log.Print("Failed to execute DB Statement:" + statement)
+		log.Print("Failed to prepare DB Statement:" + query)
 		log.Println(err)
-		return 0
+		return false
 	}
-	rows, _ := result.RowsAffected()
+
+	result, err := statement.Exec(args...)
+
+	if err != nil {
+		log.Print("Failed to execute DB Statement:" + query)
+		log.Println(err)
+		return false
+	}
+	defer statement.Close()
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		log.Print("Failed to insert DB data")
+		log.Println(err)
+		return false
+	}
+
 	if rows > 0 {
-		log.Println("Inserted data to database with rows: " + string(rows))
+		return true
 	}
 
-	return 1
-
-	//stmt, err := connector.database.Prepare(statement)
-	//if err != nil {
-	//log.Fatal("Failed to prepare DB Statement:" + statement)
-	//log.Fatalln(err.Error())
-	//return 0
-	//}
-
-	//result, err1 := stmt.Exec(args)
-	//if err1 != nil {
-	//log.Fatal("Failed to execute DB Query:" + statement)
-	//log.Fatalln(err.Error())
-	//return 0
-	//}
-
-	//rowsAffected, err2 := result.RowsAffected()
-	//if err2 != nil {
-	//	log.Fatal("Failed to return DB Affected rows")
-	//	log.Fatalln(err.Error())
-	//	return 0
-	//}
-
-	//return rowsAffected
+	return false
 }
 
 // CloseConnection closes the Database Connection
