@@ -68,6 +68,24 @@ func (connector *Connector) InsertData(query string, args ...interface{}) bool {
 	return false
 }
 
+// IsInDatabase is used for SELECT COUNT(*) queries to express if an entry is in the database or not
+func (connector *Connector) IsInDatabase(query string, args ...interface{}) bool {
+	rows, err := connector.getDb().Query(query, args...)
+	if err != nil {
+		logrus.Warnf("Failed to get DB row count for query: %s, because: %+v", query, err)
+		return true
+	}
+	defer rows.Close()
+
+	var count int32
+
+	if rows.Next() {
+		rows.Scan(&count)
+	}
+
+	return count > 0
+}
+
 // CloseConnection closes the Database Connection
 func (connector *Connector) CloseConnection() {
 	if connector.database != nil {

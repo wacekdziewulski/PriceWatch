@@ -2,7 +2,7 @@ package resource
 
 import (
 	"PriceWatch/service"
-	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/sirupsen/logrus"
@@ -25,5 +25,5 @@ func (resource *PriceResource) CheckPrice(w http.ResponseWriter, r *http.Request
 
 	priceData := resource.priceService.AddProductPriceByURL(requestedPage)
 
-	json.NewEncoder(w).Encode(priceData)
+	w.Write([]byte(fmt.Sprintf("Product: %s with price: %.2f %s added!", priceData.Title, priceData.PriceAmount, priceData.PriceCurrency)))
 }
