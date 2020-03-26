@@ -8,6 +8,7 @@ go:
 before_install: 
 - go get github.com/google/wire/cmd/wire
 - go get github.com/gorilla/mux 
+- go get github.com/sirupsen/logrus 
 - wire
 
 notifications:
