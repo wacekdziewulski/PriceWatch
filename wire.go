@@ -12,6 +12,6 @@ import (
 )
 
 func Initialize() *Application {
-	wire.Build(NewApplication, configuration.NewConfiguration, db.NewConnector, db.NewProductDao, service.NewPriceService, service.NewURLShorteningService, resource.NewPriceResource)
+	wire.Build(NewApplication, configuration.NewConfiguration, db.NewConnector, db.NewPriceDao, db.NewStoreDao, db.NewProductDao, service.NewPriceService, service.NewURLParsingService, service.NewURLShorteningService, resource.NewPriceResource)
 	return &Application{}
 }

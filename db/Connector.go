@@ -2,6 +2,7 @@ package db
 
 import (
 	"PriceWatch/configuration"
+	"PriceWatch/model"
 	"database/sql"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -84,6 +85,24 @@ func (connector *Connector) IsInDatabase(query string, args ...interface{}) bool
 	}
 
 	return count > 0
+}
+
+// GetStoreFromDatabase Returns the store data based on hostname
+func (connector *Connector) GetStoreFromDatabase(query string, args ...interface{}) *model.StoreData {
+	rows, err := connector.getDb().Query(query, args...)
+	if err != nil {
+		logrus.Warnf("Failed to get DB row count for query: %s, because: %+v", query, err)
+		return nil
+	}
+	defer rows.Close()
+
+	var data model.StoreData = model.StoreData{}
+
+	if rows.Next() {
+		rows.Scan(&data.StoreName, &data.AffiliateParam, &data.AffiliateValue)
+	}
+
+	return &data
 }
 
 // CloseConnection closes the Database Connection
