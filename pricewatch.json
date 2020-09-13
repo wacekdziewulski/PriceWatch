@@ -14,8 +14,8 @@
         "Schema": "pricewatch"
     },
     "URLShortening": {
-        "AccessToken": "",
-        "GroupGUID": "",
+        "AccessToken": "a9ab3e653714aa91ca415d33b2216a92354694fe",
+        "GroupGUID": "Bi658MEGwBy",
         "Scheme": "https",
         "APIHost": "api-ssl.bitly.com",
         "APIPath": "/v4/shorten"

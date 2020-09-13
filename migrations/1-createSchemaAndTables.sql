@@ -131,7 +131,13 @@ CREATE TABLE `stores` (
 
 LOCK TABLES `stores` WRITE;
 /*!40000 ALTER TABLE `stores` DISABLE KEYS */;
-INSERT INTO `stores` VALUES (1,'Gearbest','https://gearbest.com','lkid','11805939'),(2,'Banggood','https://banggood.com','p','NM16185262492015094D'),(3,'Tomtop','https://tomtop.com','aid','4smiglapl'),(4,'HobbyKing','https://hobbyking.com','affiliate_code','OKGPJSDQIOVQUSK'),(5,'HorusRC','https://horusrc.com','acc','5206'),(6,'BetaFPV','https://betafpv.com','sca_ref','61382.1iPDBtK4Mq');
+INSERT INTO `stores` VALUES 
+  (1,'Gearbest','https://gearbest.com','lkid','11805939'),
+  (2,'Banggood','https://banggood.com','p','NM16185262492015094D'),
+  (3,'Tomtop','https://tomtop.com','aid','4smiglapl'),
+  (4,'HobbyKing','https://hobbyking.com','affiliate_code','OKGPJSDQIOVQUSK'),
+  (5,'HorusRC','https://horusrc.com','acc','5206'),
+  (6,'BetaFPV','https://betafpv.com','sca_ref','61382.1iPDBtK4Mq');
 /*!40000 ALTER TABLE `stores` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

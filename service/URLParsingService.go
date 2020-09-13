@@ -18,25 +18,29 @@ func NewURLParsingService(storeDao *db.StoreDao, urlShorteningService *URLShorte
 	return &URLParsingService{storeDao, urlShorteningService}
 }
 
-// CreateURLContext creates the URLContext object from just the URL given
-func (service *URLParsingService) CreateURLContext(rawurl string) model.URLContext {
-	var context model.URLContext = model.URLContext{}
-	context.URL, _ = url.Parse(rawurl)
-	context.AffiliateURL = service.createAffiliateURL(context.URL)
-	context.AffiliateShortURL = <-service.urlShorteningService.ShortenURL(context.AffiliateURL.String())
-	return context
-}
-
-func (service *URLParsingService) createAffiliateURL(input *url.URL) *url.URL {
-	affiliateURL := url.URL{Scheme: "https", Host: input.Host}
-
+func (service *URLParsingService) findStoreDataByURL(input *url.URL) *model.StoreData {
 	var host string = input.Host
 	if strings.HasPrefix(host, "m.") || strings.HasPrefix(host, "www.") {
 		hostFragments := strings.Split(host, ".")
 		host = strings.Join(hostFragments[1:], ".")
 	}
 
-	storeData := service.storeDao.GetStoreDataByHostname(host)
+	return service.storeDao.GetStoreDataByHostname(host)
+}
+
+// CreateURLContext creates the URLContext object from just the URL given
+func (service *URLParsingService) CreateURLContext(rawurl string) model.URLContext {
+	var context model.URLContext = model.URLContext{}
+	context.URL, _ = url.Parse(rawurl)
+	storeData := service.findStoreDataByURL(context.URL)
+	context.StoreName = storeData.StoreName
+	context.AffiliateURL = service.createAffiliateURL(context.URL, storeData)
+	context.AffiliateShortURL = <-service.urlShorteningService.ShortenURL(context.AffiliateURL.String())
+	return context
+}
+
+func (service *URLParsingService) createAffiliateURL(input *url.URL, storeData *model.StoreData) *url.URL {
+	affiliateURL := url.URL{Scheme: "https", Host: input.Host}
 
 	values := url.Values{}
 	values.Add(storeData.AffiliateParam, storeData.AffiliateValue)

@@ -4,6 +4,7 @@ import (
 	"PriceWatch/db"
 	"PriceWatch/model"
 	"PriceWatch/web"
+	"PriceWatch/web/scraping"
 
 	"github.com/sirupsen/logrus"
 )
@@ -56,7 +57,7 @@ func (service *PriceService) AddProductPriceByURL(urlContext *model.URLContext) 
 	// 4b. If we don't have an image yet, use the ImageURL to download the image
 	// 5. Attach the image data upon adding the entry to the database
 	// 6. Update the price of the product if we already have a product entry
-	priceData := <-web.ExtractPriceDataFromURL(urlContext.URL.String())
+	priceData := <-scraping.ExtractPriceDataFromURL(urlContext)
 	priceData.ImageData = <-web.DownloadImage(priceData.ImageURL)
 	priceData.AffiliateShortURL = urlContext.AffiliateShortURL
 
